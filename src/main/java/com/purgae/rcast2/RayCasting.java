@@ -3,26 +3,23 @@ package com.purgae.rcast2;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 
 @SuppressWarnings("serial")
 public class RayCasting extends Engine {
 
     private final int[][] map = new int[][] 
     {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+        {1, 1, 1, 0, 0, 0, 1, 1, 0, 1},
+        {1, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
     int TILEMAP_WIDTH = map[0].length;
@@ -30,24 +27,31 @@ public class RayCasting extends Engine {
 
     private float angle = 0f;
     private float fov = 60f;
-    private float px = 200f;
-    private float py = 200f;
+    private float px = 0;
+    private float py = 0;
     private int tileWidth, tileHeight;
 
+    private boolean autoRotate = true;
+
     public void init(int screenWidth, int screenHeight) {
-        setPreferredSize(new Dimension(screenWidth, screenHeight));
+        setSize(new Dimension(screenWidth, screenHeight));
         tileWidth = screenWidth/TILEMAP_WIDTH;
         tileHeight = screenHeight/TILEMAP_HEIGHT;
+        px = 5 * tileWidth;
+        py = 5 * tileHeight;
         System.out.println(getWidth() + "px wide.");
         System.out.println(getHeight() + "px high.");
+        System.out.println("--");
+        System.out.println(TILEMAP_WIDTH + " tiles wide.");
+        System.out.println(TILEMAP_HEIGHT + " tiles high.");
     }
 
     public void update() {
-        if(keys.contains('d')){
-            angle -= 4f;
+        if(keys.contains('d') || autoRotate){
+            angle -= 2f;
         }
         if(keys.contains('a')){
-            angle += 4f;
+            angle += 2f;
         }
         if(keys.contains('w')){
             px += Math.toDegrees(Math.cos(Math.toRadians(angle))) / 10f;
@@ -58,6 +62,15 @@ public class RayCasting extends Engine {
             py -= Math.toDegrees(Math.sin(-Math.toRadians(angle))) / 10f; 
         }
     }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        //Space hit?
+        if(e.getKeyCode() == 32) {
+            autoRotate = !autoRotate;
+        }
+    }
+
     /**
      * Implement stuff here
      */

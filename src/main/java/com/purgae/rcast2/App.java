@@ -17,14 +17,15 @@ public class App extends Frame
                 System.exit(0);
             }
         });
-        this.setSize(1600, 900);
-        this.setResizable(false);
-        this.setLocationRelativeTo(null);
 
         this.add(currentEngine);
         addKeyListener(currentEngine);
-        currentEngine.start(1600, 900);
-        //pack();
+        currentEngine.start(1000, 1000);
+
+        this.setSize(1000, 1000);
+        this.setResizable(false);
+        this.setLocationRelativeTo(null);
+        
         this.setVisible(true);
     }
 
