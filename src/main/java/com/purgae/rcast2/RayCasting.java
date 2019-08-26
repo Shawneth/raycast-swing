@@ -9,33 +9,37 @@ public class RayCasting extends Engine {
 
     private final int[][] map = new int[][] 
     {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     };
+
+    int TILEMAP_WIDTH = map[0].length;
+    int TILEMAP_HEIGHT = map.length;
 
     private float angle = 0f;
     private float fov = 60f;
     private float px = 200f;
     private float py = 200f;
-    private int widthPerRay;
+    private int tileWidth, tileHeight;
 
-    public RayCasting() {
-        super();
-    }
-
-    public void init() {
-        System.out.println("Our renderer is " + getWidth() + "px wide.");
-        widthPerRay = this.getWidth()/(int)this.fov;
-        setPreferredSize(new Dimension(widthPerRay * (int) this.fov, getHeight()));
-        System.out.println("Our renderer is " + getWidth() + "px wide.");
+    public void init(int screenWidth, int screenHeight) {
+        setPreferredSize(new Dimension(screenWidth, screenHeight));
+        tileWidth = screenWidth/TILEMAP_WIDTH;
+        tileHeight = screenHeight/TILEMAP_HEIGHT;
+        System.out.println(getWidth() + "px wide.");
+        System.out.println(getHeight() + "px high.");
     }
 
     public void update() {
@@ -58,9 +62,23 @@ public class RayCasting extends Engine {
      * Implement stuff here
      */
     public void draw(Graphics2D g){
-        g.setColor(Color.gray);
+        //Draw map
+        for(int i = 0; i < map.length; i++){
+            for(int k = 0; k < map[i].length; k++){
+                if(map[i][k] == 1){
+                    g.setColor(Color.black);
+                }
+                else {
+                    g.setColor(Color.WHITE);
+                }
+                //Tile area divided by four will center the map.
+                g.fillRect(k * tileWidth, i * tileHeight, tileWidth, tileHeight);
+                //g.setColor(Color.RED);
+                //g.drawString("Y: " + (i * tileHeight - tileHeight/2), k * tileWidth - tileWidth/4, i * tileHeight - tileHeight/2);
+            }
+        }
+
         float rayStartAngle = angle - fov/2;
-        float rayEndAngle = angle + fov/2;
         for(int x = 0; x < fov; x++){
             /*
             * origin is x and y.
@@ -69,16 +87,29 @@ public class RayCasting extends Engine {
             * Pass the value through sin/cos and add the offset of the current position (i.e x = 10, so add 10 as well.)
             * Convert the final value to degrees and cast it to an int so it can be plotted on the canvas.
             */
-            g.drawLine((int)px, (int)py, 
-                (int) (Math.toDegrees(Math.cos(Math.toRadians(rayStartAngle + fov-x)) * 4f) + px), 
-                (int) (Math.toDegrees(Math.sin(-Math.toRadians(rayStartAngle + fov-x)) * 4f) + py));
+            
+            //Let's get that wall hit
+            boolean isHit = false;
+            float xCheck = px;
+            float yCheck = py;
+            for(int d = 0; d < 500; d++){
+                g.setColor(Color.darkGray);
+                g.fillRect((int)xCheck, (int)yCheck, 1, 1);
+                xCheck += Math.toDegrees(Math.cos(Math.toRadians(rayStartAngle + fov-x)) * 0.05f);
+                yCheck += Math.toDegrees(Math.sin(-Math.toRadians(rayStartAngle + fov-x)) * 0.05f);
+                int xWhole = (int) (xCheck/tileWidth);
+                int yWhole = (int) (yCheck/tileHeight);
+                if(yWhole >= 0 && yWhole < map.length && xWhole >= 0 && xWhole < map[yWhole].length){
+                    if(map[yWhole][xWhole] == 1){
+                        //WE HIT!!
+                        break;
+                    }
+                }
+            }
         }
-        g.setColor(Color.orange);
-        //g.drawLine((int) px, (int) py, (int) Math.toDegrees(Math.cos(Math.toRadians(angle))) * (int) px, (int) Math.toDegrees(Math.sin(-Math.toRadians(angle))) * (int) py);
-        
-        g.setColor(Color.RED);
+
+        g.setColor(Color.WHITE);
             g.drawString("Starting angle: " + rayStartAngle, 5, 10);
-            g.drawString("Ending angle: " + rayEndAngle, 5, 20);
             g.drawString("x: " + px, 5, 30);
             g.drawString("y: " + py, 5, 40);
 

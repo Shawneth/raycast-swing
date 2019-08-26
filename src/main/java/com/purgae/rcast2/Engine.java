@@ -54,10 +54,10 @@ public abstract class Engine extends JPanel implements ActionListener, KeyListen
 
     public abstract void update();
     public abstract void draw(Graphics2D g);
-    protected abstract void init();
+    protected abstract void init(int width, int height);
 
-    public void start() {
-        init();
+    public void start(int width, int height) {
+        init(width, height);
         isRendering = true;
     }
 
