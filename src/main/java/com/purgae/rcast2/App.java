@@ -20,9 +20,9 @@ public class App extends Frame
 
         this.add(currentEngine);
         addKeyListener(currentEngine);
-        currentEngine.start(1000, 1000);
+        currentEngine.start(1024, 768);
 
-        this.setSize(1000, 1000);
+        this.setSize(1024, 768);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         
