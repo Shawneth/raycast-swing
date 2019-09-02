@@ -33,17 +33,17 @@ public class RayCasting extends Engine {
     private int screenWidth, screenHeight;
     private int tileWidth, tileHeight;
 
-    private float rayDistance = 0.03f;
+    private float rayDistance = 0.02f;
     private float rayRenderWidth;
     private float angle = 0f;
-    private float fov = 90f;
+    private float fov = 50f;
     private float px = 0f;
     private float py = 0f;
 
     private boolean autoRotate = false;
-    private boolean isDrawingMap = true;
+    private boolean isDrawingMap = false;
 
-    private int raysPerDegree = 1;
+    private int raysPerDegree = 4;
     private int rayCollideChecks = 800;
 
     public void init(int screenWidth, int screenHeight) {
@@ -121,22 +121,15 @@ public class RayCasting extends Engine {
 
         //Render Walls
         float rayStartAngle = angle - fov/2;
-        double cameraPlane = Math.toRadians(angle - 90);
-
         for(float x = 0; x < fov * raysPerDegree; x++){
             boolean isHit = false;
-            double dx = Math.toDegrees(Math.cos(Math.toRadians(angle)) * rayDistance);
-            double dy = Math.toDegrees(Math.sin(-Math.toRadians(angle)) * rayDistance);
-
-            //initial angle for camera plane
-            double xCheck = px + Math.toDegrees(Math.cos(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2));
-            double yCheck = py + Math.toDegrees(-Math.sin(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2));
-            int d = 0;
-            for(;d < rayCollideChecks; d++){
-                xCheck += dx;
-                yCheck += dy;
-                int xWhole = (int)Math.round(xCheck/tileWidth);
-                int yWhole = (int)Math.round(yCheck/tileHeight);
+            float xCheck = px;
+            float yCheck = py;
+            for(int d = 0; d < rayCollideChecks; d++){
+                xCheck += Math.toDegrees(Math.cos(Math.toRadians(rayStartAngle + fov - (x/raysPerDegree))) * rayDistance);
+                yCheck += Math.toDegrees(Math.sin(-Math.toRadians(rayStartAngle + fov - (x/raysPerDegree))) * rayDistance);
+                int xWhole = Math.round(xCheck/tileWidth);
+                int yWhole = Math.round(yCheck/tileHeight);
                 if(yWhole >= 0 && yWhole < map.length && xWhole >= 0 && xWhole < map[yWhole].length){
                     if(map[yWhole][xWhole] == 1){
                         isHit = true;
@@ -145,8 +138,10 @@ public class RayCasting extends Engine {
                 }
             }
             if(isHit){
-                float distance = 1 + d * (float) Math.sqrt(dx*dx + dy*dy);
-                float lineHeight = (screenHeight/distance)*50;
+                float distance = (float) Math.sqrt(
+                    Math.pow((yCheck - py), 2) + Math.pow((xCheck - px), 2)
+                );
+                float lineHeight = screenHeight/(distance/screenHeight)/12f;
                 int shadeValue = Math.round(Math.min(brightestValue, Math.max(lineHeight/3.5f + 16f, darkestValue)));
                 g.setColor(new Color(shadeValue, shadeValue, shadeValue));
                 g.fillRect(
@@ -183,27 +178,19 @@ public class RayCasting extends Engine {
             * Pass the value through sin/cos and add the offset of the current position (i.e x = 10, so add 10 as well.)
             * Convert the final value to degrees and cast it to an int so it can be plotted on the canvas.
             */
-            double cameraPlane = Math.toRadians(angle - 90);
-            double perspectiveMod = angle/2 + (x/raysPerDegree);
+            
             //Let's get that wall hit
-            double dx = Math.toDegrees(Math.cos(Math.toRadians(perspectiveMod)) * rayDistance);
-            double dy = Math.toDegrees(Math.sin(-Math.toRadians(perspectiveMod)) * rayDistance);
-
-            //initial angle for camera plane
-            double xCheck = px + Math.toDegrees(Math.cos(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2));
-            double yCheck = py + Math.toDegrees(-Math.sin(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2));
-            int d = 0;
-            for(;d < rayCollideChecks; d++){
-                xCheck += dx;
-                yCheck += dy;
-                int xWhole = (int)Math.round(xCheck/tileWidth);
-                int yWhole = (int)Math.round(yCheck/tileHeight);
+            float xCheck = px;
+            float yCheck = py;
+            for(int d = 0; d < rayCollideChecks; d++){
+                g.setColor(Color.darkGray);
+                xCheck += Math.toDegrees(Math.cos(Math.toRadians(rayStartAngle + fov-(x/raysPerDegree))) * rayDistance);
+                yCheck += Math.toDegrees(Math.sin(-Math.toRadians(rayStartAngle + fov-(x/raysPerDegree))) * rayDistance);
+                int xWhole = Math.round(xCheck/tileWidth);
+                int yWhole = Math.round(yCheck/tileHeight);
                 if(yWhole >= 0 && yWhole < map.length && xWhole >= 0 && xWhole < map[yWhole].length){
                     if(map[yWhole][xWhole] == 1){
-                        g.drawLine((int)(px + Math.toDegrees(Math.cos(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2)) + tileWidth/2), 
-                        (int)(py + Math.toDegrees(-Math.sin(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2)) + tileHeight/2), 
-                        (int)xCheck + tileWidth/2, 
-                        (int)yCheck + tileHeight/2);
+                        g.drawLine((int)px + tileWidth/2, (int)py + tileHeight/2, (int)xCheck + tileWidth/2, (int)yCheck + tileHeight/2);
                         break;
                     }
                 }
