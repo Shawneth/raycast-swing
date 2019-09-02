@@ -33,17 +33,17 @@ public class RayCasting extends Engine {
     private int screenWidth, screenHeight;
     private int tileWidth, tileHeight;
 
-    private float rayDistance = 0.03f;
+    private float rayDistance = 0.02f;
     private float rayRenderWidth;
     private float angle = 0f;
-    private float fov = 90f;
+    private float fov = 45f;
     private float px = 0f;
     private float py = 0f;
 
     private boolean autoRotate = false;
     private boolean isDrawingMap = true;
 
-    private int raysPerDegree = 1;
+    private int raysPerDegree = 4;
     private int rayCollideChecks = 800;
 
     public void init(int screenWidth, int screenHeight) {
@@ -125,8 +125,10 @@ public class RayCasting extends Engine {
 
         for(float x = 0; x < fov * raysPerDegree; x++){
             boolean isHit = false;
-            double dx = Math.toDegrees(Math.cos(Math.toRadians(angle)) * rayDistance);
-            double dy = Math.toDegrees(Math.sin(-Math.toRadians(angle)) * rayDistance);
+            double perspectiveMod = angle - (x/raysPerDegree-fov/2);
+            //Let's get that wall hit
+            double dx = Math.toDegrees(Math.cos(Math.toRadians(perspectiveMod)) * rayDistance);
+            double dy = Math.toDegrees(Math.sin(-Math.toRadians(perspectiveMod)) * rayDistance);
 
             //initial angle for camera plane
             double xCheck = px + Math.toDegrees(Math.cos(cameraPlane) * Math.toRadians(x/raysPerDegree-fov/2));
@@ -145,8 +147,8 @@ public class RayCasting extends Engine {
                 }
             }
             if(isHit){
-                float distance = 1 + d * (float) Math.sqrt(dx*dx + dy*dy);
-                float lineHeight = (screenHeight/distance)*50;
+                float distance = d * (float) Math.sqrt(dx*dx + dy*dy);
+                float lineHeight = (screenHeight/distance)*25;
                 int shadeValue = Math.round(Math.min(brightestValue, Math.max(lineHeight/3.5f + 16f, darkestValue)));
                 g.setColor(new Color(shadeValue, shadeValue, shadeValue));
                 g.fillRect(
@@ -184,7 +186,7 @@ public class RayCasting extends Engine {
             * Convert the final value to degrees and cast it to an int so it can be plotted on the canvas.
             */
             double cameraPlane = Math.toRadians(angle - 90);
-            double perspectiveMod = angle/2 + (x/raysPerDegree);
+            double perspectiveMod = angle - (x/raysPerDegree-fov/2);
             //Let's get that wall hit
             double dx = Math.toDegrees(Math.cos(Math.toRadians(perspectiveMod)) * rayDistance);
             double dy = Math.toDegrees(Math.sin(-Math.toRadians(perspectiveMod)) * rayDistance);
